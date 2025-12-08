@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  memobase-server-db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    container_name: memobase-server-db
+    environment:
+      - POSTGRES_USER=memobase
+      - POSTGRES_PASSWORD=memobase123
+      - POSTGRES_DB=memobase
+    ports:
+      - '5432:5432'
+    volumes:
+      - /data/memobase/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U memobase -d memobase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - 1panel-network
+
+  memobase-server-redis:
+    image: redis:7.4
+    restart: unless-stopped
+    container_name: memobase-server-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data/memobase/redis:/data
+    command: ["redis-server", "--requirepass", "redis123"]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a redis123 ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - 1panel-network
+
+  memobase-server-api:
+    image: memobase-server:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    container_name: memobase-server-api
+    environment:
+      - DATABASE_URL=postgresql://memobase:memobase123@memobase-server-db:5432/memobase
+      - REDIS_URL=redis://:redis123@memobase-server-redis:6379/0
+      - ACCESS_TOKEN=secret
+      - PROJECT_ID=default
+      - API_HOSTS=*
+      - USE_CORS=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      memobase-server-db:
+        condition: service_healthy
+      memobase-server-redis:
+        condition: service_healthy
+    ports:
+      - '8019:8000'
+    volumes:
+      - /data/memobase/config.yaml:/app/config.yaml:ro
+    networks:
+      - 1panel-network
+
+networks:
+  1panel-network:
+    external: true
