@@ -37,7 +37,7 @@ services:
       REDIS_URL: redis://:redis123@memobase-server-redis:6379/0
       ACCESS_TOKEN: secret
       PROJECT_ID: default
-      API_HOSTS: "*"
+      API_HOSTS: "http://localhost:8019,http://127.0.0.1:8019"
       USE_CORS: "true"
       MEMOBASE_LANGUAGE: zh
       MEMOBASE_LLM_STYLE: openai
