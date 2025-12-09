@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-API_DIR="${SCRIPT_DIR}/../projecs/memobase/src/server/api"
+API_DIR="${SCRIPT_DIR}/../projects/memobase/src/server/api"
 
 echo "准备构建 Memobase Docker 镜像..."
 
