@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   memobase-server-db:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:0.8.1-pg17-trixie
     restart: unless-stopped
     container_name: memobase-server-db
     environment:
@@ -22,7 +22,7 @@ services:
       - 1panel-network
 
   memobase-server-redis:
-    image: redis:7.4
+    image: redis:7-alpine
     restart: unless-stopped
     container_name: memobase-server-redis
     ports:
