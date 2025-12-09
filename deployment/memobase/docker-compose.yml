@@ -30,7 +30,6 @@ services:
 
   memobase-server-api:
     image: memobase-server:latest
-    platform: linux/amd64
     restart: unless-stopped
     container_name: memobase-server-api
     environment:
