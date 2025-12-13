@@ -1,3 +1,6 @@
-# 忽略 projects 目录中的所有文件
-projects/
+# Project specific - projects 目录内容（每个开发者需要自己管理）
+# projects/ 目录包含项目相关文件，为避免将大量内容提交到仓库，整个目录被忽略
+# 但保留 .gitkeep 文件以保持目录结构
+projects/*
+!projects/.gitkeep
 
