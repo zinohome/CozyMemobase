@@ -1,0 +1,112 @@
+# CozyMemobase 项目规则
+
+## 📚 文档组织规则（强制要求）
+
+### 文档位置规则
+- **所有文档必须放在 `docs/` 目录下**
+- **禁止在项目根目录或其他目录创建文档文件（.md, .txt 等）**
+- **README.md 文件例外：**
+  - 项目根目录的 `README.md` 是项目主文档，允许存在
+  - 各子目录的 `README.md` 用于说明该目录用途，允许存在
+  - 但详细的技术文档、使用文档、开发文档等必须放在 `docs/` 目录下
+
+### 文档目录结构
+```
+docs/
+├── README.md                    # 文档索引和导航
+├── PROJECT_STRUCTURE.md         # 项目结构说明
+├── deployment/                  # 部署相关文档
+│   └── README.md
+├── development/                  # 开发相关文档
+│   └── README.md
+├── usage/                       # 使用相关文档
+│   └── README.md
+└── [其他分类]/                   # 按需添加其他分类
+    └── README.md
+```
+
+### 文档命名规范
+- 使用有意义的文件名，清晰描述文档内容
+- 使用 kebab-case（短横线分隔）命名：`deployment-guide.md`
+- 主要文档使用 `README.md` 作为文件名
+- 避免使用中文文件名（内容可以使用中文）
+
+### 文档分类原则
+- **deployment/**: 部署、运维、配置相关文档
+- **development/**: 开发环境、开发流程、代码规范相关文档
+- **usage/**: 使用指南、API 文档、最佳实践相关文档
+- **其他分类**: 根据项目需要添加，如 `api/`, `troubleshooting/`, `contributing/` 等
+
+## 🚫 禁止的操作
+
+1. **禁止在根目录创建文档文件**（除 README.md 外）
+   - ❌ `根目录/部署指南.md`
+   - ❌ `根目录/使用说明.md`
+   - ✅ `docs/deployment/README.md`
+   - ✅ `docs/usage/README.md`
+
+2. **禁止在 deployment/ 目录下创建详细文档**
+   - ❌ `deployment/部署说明.md`
+   - ✅ `deployment/README.md`（简要说明）
+   - ✅ `docs/deployment/README.md`（详细文档）
+
+3. **禁止在项目根目录创建结构说明文档**
+   - ❌ `根目录/PROJECT_STRUCTURE.md`
+   - ✅ `docs/PROJECT_STRUCTURE.md`
+
+## 🚫 源代码修改规则（强制要求）
+
+### 禁止修改原项目源代码
+- **绝对禁止直接修改 `projects/memobase/` 目录下的任何源代码文件**
+- `projects/memobase/` 目录包含的是 memobase 官方源代码，必须保持原样
+- 任何对官方源代码的修改都应该通过 Docker 构建时的补丁机制实现
+
+### 补丁机制
+如果需要修改 memobase 源代码，必须使用以下方式：
+
+1. **在 Docker 构建时打补丁**
+   - 补丁文件应放在 `deployment/memobase/patches/` 目录下
+   - 在 Dockerfile 中使用补丁脚本应用补丁
+   - 参考现有补丁示例（如果存在）
+
+2. **补丁文件命名规范**
+   - 补丁文件应清晰描述修改内容
+   - 例如：`patch_cors.py`, `patch_error_handling.py`
+
+3. **补丁脚本要求**
+   - 补丁脚本应该是幂等的（可以安全地多次运行）
+   - 补丁脚本应该包含回滚机制（如果可能）
+   - 补丁脚本应该记录修改内容
+
+### 允许修改的目录
+- ✅ `deployment/` - 部署配置和 Docker 相关文件
+- ✅ `docs/` - 文档文件
+- ✅ `deployment/memobase/patches/` - 补丁文件
+
+### 禁止修改的目录
+- ❌ `projects/memobase/` - Memobase 官方源代码
+- ❌ `projects/memobase/` 下的任何其他官方源代码目录
+
+### 检查清单
+修改代码前，请确认：
+- [ ] 是否在修改 `projects/memobase/` 目录下的文件？
+- [ ] 如果是，是否应该使用补丁机制？
+- [ ] 补丁文件是否放在正确的位置？
+- [ ] 补丁脚本是否在 Dockerfile 中正确应用？
+
+## ⚠️ 重要提醒
+
+**所有文档必须放在 `docs/` 目录下并按子目录整理！**
+
+**绝对禁止直接修改 `projects/memobase/` 目录下的官方源代码！**
+
+违反此规则的文件将被视为不符合项目规范，需要在代码审查时修正。
+
+## 🔍 检查清单
+
+创建或修改文档时，请确认：
+- [ ] 文档是否放在 `docs/` 目录下的适当子目录？
+- [ ] 是否在 `docs/README.md` 中添加了索引？
+- [ ] 文件名是否符合命名规范？
+- [ ] 是否避免了在根目录创建文档文件？
+- [ ] 是否避免了直接修改 `projects/memobase/` 目录下的源代码？
