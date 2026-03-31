@@ -11,15 +11,49 @@ on:
 jobs:
   mirror:
     runs-on: ubuntu-latest
+    env:
+      DEST_OWNER: yanyiai
+      DEST_REPO: CozyMemobase
+      MIRROR_USER: zinohome
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Verify token can push
+        env:
+          T: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json, os, urllib.request
+repo = f"https://api.github.com/repos/{os.environ['DEST_OWNER']}/{os.environ['DEST_REPO']}"
+req = urllib.request.Request(repo, headers={
+  "Authorization": f"token {os.environ['T']}",
+  "Accept": "application/vnd.github+json"
+})
+data = json.loads(urllib.request.urlopen(req).read().decode())
+print("push permission:", data.get("permissions", {}).get("push"))
+if not data.get("permissions", {}).get("push"):
+    raise SystemExit("Token has no push permission")
+PY
+
       - name: Push mirror
         env:
           T: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
         run: |
           set -euo pipefail
-          git push --mirror "https://x-access-token:${T}@github.com/yanyiai/CozyMemobase"
+          cat > /tmp/git-askpass.sh <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  *Username*) echo "$MIRROR_USER" ;;
+  *) echo "$T" ;;
+esac
+EOF
+          chmod +x /tmp/git-askpass.sh
+          export GIT_ASKPASS=/tmp/git-askpass.sh
+          export GIT_TERMINAL_PROMPT=0
+          git remote remove mirror || true
+          git remote add mirror "https://github.com/${DEST_OWNER}/${DEST_REPO}.git"
+          git push --mirror mirror
