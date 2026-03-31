@@ -1,19 +1,25 @@
-name: token-check
+name: Mirror to yanyiai
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
 
 jobs:
-  check:
+  mirror:
     runs-on: ubuntu-latest
     steps:
-      - name: Check repo visibility with token
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push mirror
         env:
           T: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
         run: |
-          code=$(curl -s -o /tmp/r.json -w "%{http_code}" \
-            -H "Authorization: token ${T}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/yanyiai/CozyMemobase)
-          echo "status=$code"
-          test "$code" = "200"
+          set -euo pipefail
+          git push --mirror "https://x-access-token:${T}@github.com/yanyiai/CozyMemobase.git"
