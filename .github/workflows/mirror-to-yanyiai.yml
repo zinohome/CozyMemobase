@@ -1,31 +1,44 @@
 name: Mirror to yanyiai
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     tags:
       - "*"
-  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
+    env:
+      DEST_OWNER: yanyiai
+      DEST_REPO: CozyMemobase
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Push to GitHub-B
+      - name: Validate token can see destination repo
         env:
           MIRROR_TOKEN: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
         run: |
-          set -e
-          git remote remove mirror || true
-          git remote add mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/yanyiai/${{ github.event.repository.name }}.git"
-          git push mirror --all
-          git push mirror --tags
+          set -euo pipefail
+          code=$(curl -s -o /tmp/repo.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${MIRROR_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${DEST_OWNER}/${DEST_REPO}")
+          echo "API status: ${code}"
+          test "${code}" = "200"
+
+      - name: Push mirror
+        env:
+          MIRROR_TOKEN: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
+        run: |
+          set -euo pipefail
+          git push --mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/${DEST_OWNER}/${DEST_REPO}.git"
