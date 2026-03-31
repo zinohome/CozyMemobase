@@ -22,4 +22,4 @@ jobs:
           T: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
         run: |
           set -euo pipefail
-          git push --mirror "https://x-access-token:${T}@github.com/yanyiai/CozyMemobase.git"
+          git push --mirror "https://x-access-token:${T}@github.com/yanyiai/CozyMemobase"
