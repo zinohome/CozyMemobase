@@ -2,21 +2,27 @@ name: Mirror to yanyiai
 
 on:
 push:
-branches: ["**"]
-tags: ["*"]
+branches:
+- main
+tags:
+- '*'
 workflow_dispatch:
 
 jobs:
 mirror:
 runs-on: ubuntu-latest
 steps:
-- name: Checkout full history
+- name: Checkout
 uses: actions/checkout@v4
 with:
 fetch-depth: 0
 
 - name: Push to GitHub-B
+env:
+MIRROR_TOKEN: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
 run: |
-git remote add mirror https://x-access-token:${{ secrets.A_TO_B_MIRROR_TOKEN }}@github.com/yanyiai/${{ github.event.repository.name }}.git
+set -e
+git remote remove mirror || true
+git remote add mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/yanyiai/${{ github.event.repository.name }}.git"
 git push mirror --all
 git push mirror --tags
