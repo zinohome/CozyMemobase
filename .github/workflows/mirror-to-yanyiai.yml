@@ -1,44 +1,19 @@
-name: Mirror to yanyiai
+name: token-check
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    tags:
-      - "*"
-
-permissions:
-  contents: read
 
 jobs:
-  mirror:
+  check:
     runs-on: ubuntu-latest
-    env:
-      DEST_OWNER: yanyiai
-      DEST_REPO: CozyMemobase
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Validate token can see destination repo
+      - name: Check repo visibility with token
         env:
-          MIRROR_TOKEN: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
+          T: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
         run: |
-          set -euo pipefail
-          code=$(curl -s -o /tmp/repo.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${MIRROR_TOKEN}" \
+          code=$(curl -s -o /tmp/r.json -w "%{http_code}" \
+            -H "Authorization: token ${T}" \
             -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${DEST_OWNER}/${DEST_REPO}")
-          echo "API status: ${code}"
-          test "${code}" = "200"
-
-      - name: Push mirror
-        env:
-          MIRROR_TOKEN: ${{ secrets.A_TO_B_MIRROR_TOKEN }}
-        run: |
-          set -euo pipefail
-          git push --mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/${DEST_OWNER}/${DEST_REPO}.git"
+            https://api.github.com/repos/yanyiai/CozyMemobase)
+          echo "status=$code"
+          test "$code" = "200"
