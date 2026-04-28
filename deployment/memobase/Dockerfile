@@ -18,9 +18,14 @@ COPY api.py /app/
 # Expose port 8000 (FastAPI default)
 EXPOSE 8000
 
+# Wait-for-PG script
+COPY wait_for_pg.py /app/wait_for_pg.py
+
+# Wrapper entrypoint: wait for PG → start uvicorn
+RUN printf '#!/bin/bash\nset -e\nif [ -n "$DATABASE_URL" ]; then\n  echo "Waiting for PostgreSQL..."\n  /app/.venv/bin/python3 /app/wait_for_pg.py\nfi\nexec /app/.venv/bin/uvicorn api:app --host 0.0.0.0 --port 8000\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Run the FastAPI server using uvicorn
-CMD ["/app/.venv/bin/uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
