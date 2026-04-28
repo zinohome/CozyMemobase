@@ -22,7 +22,7 @@ EXPOSE 8000
 COPY wait_for_pg.py /app/wait_for_pg.py
 
 # Wrapper entrypoint: wait for PG → start uvicorn
-RUN printf '#!/bin/bash\nset -e\nif [ -n "$DATABASE_URL" ]; then\n  echo "Waiting for PostgreSQL..."\n  /app/.venv/bin/python3 /app/wait_for_pg.py\nfi\nexec /app/.venv/bin/uvicorn api:app --host 0.0.0.0 --port 8000\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN printf '#!/bin/bash\nset -e\nif [ -n "$DATABASE_URL" ]; then\n  echo "Waiting for PostgreSQL..."\n  /app/.venv/bin/python3 /app/wait_for_pg.py\n  echo "PG ready. Waiting 5s for stability..."\n  sleep 5\nfi\nexec /app/.venv/bin/uvicorn api:app --host 0.0.0.0 --port 8000\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

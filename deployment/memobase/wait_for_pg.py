@@ -1,7 +1,6 @@
 """Wait for PostgreSQL to be fully ready before starting Memobase.
 
-Uses psycopg2 (same driver as Memobase) to verify PG accepts password auth.
-Requires 5 consecutive successful connections at 3s intervals.
+Uses psycopg2 (same driver as Memobase) for consistent auth behavior.
 """
 import os
 import sys
